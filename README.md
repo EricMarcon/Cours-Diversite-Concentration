@@ -1,57 +1,51 @@
-# Diversité et Concentration, partie 1
+![rmarkdown](https://github.com/EricMarcon/Diversite-Concentration/workflows/rmarkdown/badge.svg)
 
-Formats:
+
+# Diversité et Concentration, cours doctoral
+
+## Partie 1 : Diversité
 
 - [HTML](https://EricMarcon.github.io/Diversite-Concentration/1-Diversite.html)
 - [PDF](https://EricMarcon.github.io/Diversite-Concentration/1-Diversite.pdf)
 
 
-# Diversité et Concentration, partie 2
-
-Formats:
+## Partie 2 : Concentration en espace discret
 
 - [HTML](https://EricMarcon.github.io/Diversite-Concentration/2-Concentration.html)
 - [PDF](https://EricMarcon.github.io/Diversite-Concentration/2-Concentration.pdf)
 
 
-# Diversité et Concentration, partie 3
+## Partie 3 : Concentration en espace continu
 
-Format : [PowerPoint](https://EricMarcon.github.io/Diversite-Concentration/3-EspaceContinu.pptx)
-
-
-# Diversité et Concentration, partie 4
-
-Format : [PowerPoint](https://EricMarcon.github.io/Diversite-Concentration/4-Perspectives.pptxl)
+- [PowerPoint](https://EricMarcon.github.io/Diversite-Concentration/3-EspaceContinu.pptx)
 
 
-# TP Biodiversité-Concentration n°1
+## Partie 3 : Perspectives
 
-Formats:
-
-- [HTML](TP 1.html)
-- [PDF](TP 1.pdf)
+- [PowerPoint](https://EricMarcon.github.io/Diversite-Concentration/4-Perspectives.pptxl)
 
 
-# TP Biodiversité-Concentration n°2
+## TP 
 
-Formats:
+### TP 1 : Diversité
 
-- [HTML](TP 2.html)
-- [PDF](TP 2.pdf)
-
-
-# TP Biodiversité-Concentration n°3
-
-Formats:
-
-- [HTML](TP3.html)
-- [PDF](TP3.pdf)
+- [HTML](https://EricMarcon.github.io/Diversite-Concentration/TP-1.html)
+- [PDF](https://EricMarcon.github.io/Diversite-Concentration/TP-1.pdf)
 
 
-# TP Biodiversité-Concentration n°4
+### TP 2 : Décomposition de la diversité
 
-Formats:
+- [HTML](https://EricMarcon.github.io/Diversite-Concentration/TP-2.html)
+- [PDF](https://EricMarcon.github.io/Diversite-Concentration/TP-2.pdf)
 
-- [HTML](TP-4.html)
-- [PDF](TP-4.pdf)
 
+### TP 3 : Concentration spatiale topographique
+
+- [HTML](https://EricMarcon.github.io/Diversite-Concentration/TP-3.html)
+- [PDF](https://EricMarcon.github.io/Diversite-Concentration/TP-3.pdf)
+
+
+### TP 4 : Concentration spatiale relative
+
+- [HTML](https://EricMarcon.github.io/Diversite-Concentration/TP-4.html)
+- [PDF](https://EricMarcon.github.io/Diversite-Concentration/TP-4.pdf)
