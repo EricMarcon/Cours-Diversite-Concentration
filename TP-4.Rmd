@@ -1,0 +1,104 @@
+---
+title: "TP Biodiversité-Concentration n°4"
+output: html_document
+date: "2023-06-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Données de Paracou
+
+## Lecture
+
+Les données sont disponibles dans le package _dbmss_.
+
+```{r}
+library("dbmss")
+data(paracou16)
+# Plot (second column of marks is Point Types) 
+autoplot(paracou16, which.marks=2, leg.side="right")
+```
+
+# Concentation spatiale relative
+
+## M intratype
+
+Les wacapous (_Vouacapoua americana_) sont-ils concentrés relativement à la distribution globale des arbres ?
+
+```{r}
+NumberOfSimulations <- 100#0 pour réduire le temps de calcul
+(Va_Menv <- MEnvelope(
+  paracou16, 
+  r = r, 
+  NumberOfSimulations = NumberOfSimulations, 
+  ReferenceType = "V. Americana"
+))
+# Plot
+autoplot(Va_Menv)
+```
+
+L'hypothèse nulle est la "localisation aléatoire" : les points sont redistribués sur les emplacements occupés par les points réels.
+
+L'attraction entre les arbres est significative.
+
+
+## M intertype
+
+Les gonfolos (_Qualea Rosea_) sont-ils concentrés autour des wacapous (_Vouacapoua americana_) relativement à la distribution globale des arbres ?
+
+```{r}
+NumberOfSimulations <- 100#0 pour réduire le temps de calcul
+(VaQr_Menv <- MEnvelope(
+  paracou16, 
+  r = r, 
+  NumberOfSimulations = NumberOfSimulations, 
+  ReferenceType = "V. Americana",
+  NeighborType = "Q. Rosea"
+))
+# Plot
+autoplot(VaQr_Menv)
+```
+L'hypothèse nulle est l'étiquetage aléatoire : les marques des points (leur espèce) sont permutées aléatoirement.
+
+Les wacapous et les gonfolos se repoussent.
+Vérifier que la répulsion est significative dans les deux sens.
+
+
+# m
+
+Les wacapous (_Vouacapoua americana_) sont concentrés relativement à la distribution globale des arbres.
+A quelle distance l'attraction se produit-elle ?
+
+```{r}
+NumberOfSimulations <- 10#00 pour réduire le temps de calcul
+(Va_menv <- mEnvelope(
+  paracou16, 
+  r = r, 
+  NumberOfSimulations = NumberOfSimulations, 
+  ReferenceType = "V. Americana"
+))
+# Plot
+autoplot(Va_menv)
+```
+
+A un peu moins de 10 m de distance, l'attraction est maximale : on y trouve presque deux fois plus de voisins que sous l'hypothèse nulle.
+
+# Kd
+
+La fonction $K_d$ de Duranton et Overman est une fonction de densité, absolue : elle mesure les interactions à distance (et non jusqu'à une distance) sans référence (ni à l'espace, ni à la densité de l'ensemble des points).
+Sa valeur est la densité de probabilité de trouver un voisin à la distance $r$, sans correction des effets de bord.
+Elle n'a de sens que comparée à l'intervalle de confiance de son hypothèse nulle.
+
+```{r}
+NumberOfSimulations <- 10#00 pour réduire le temps de calcul
+(Va_Kdenv <- KdEnvelope(
+  paracou16, 
+  r = r, 
+  NumberOfSimulations = NumberOfSimulations, 
+  ReferenceType = "V. Americana"
+))
+# Plot
+autoplot(Va_Kdenv)
+```

@@ -1,0 +1,527 @@
+---
+title: "Diversité"
+author: "Eric Marcon"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+url: https://EricMarcon.github.io/Diversite-Concentration/
+github-repo: EricMarcon/Diversite-Concentration
+bibliography: references.bib
+biblio-style: chicago
+urlcolor: blue
+output:
+  bookdown::beamer_presentation2:
+    latex_engine: xelatex
+    includes:
+      in_header: latex/header.tex
+    citation_package: natbib
+    slide_level: 2
+    df_print: kable
+    number_sections: no
+    toc: no
+    fig_caption: no
+    keep_tex: no
+  bookdown::ioslides_presentation2:
+    logo: images/logo.png
+    widescreen: true
+---
+
+```{r DoNotModify, include=FALSE}
+### Utilities. Do not modify.
+# Installation of packages if necessary
+InstallPackages <- function(Packages) {
+  InstallPackage <- function(Package) {
+    if (!Package %in% installed.packages()[, 1]) {
+      install.packages(Package, repos="https://cran.rstudio.com/")
+    }
+  }
+  invisible(sapply(Packages, InstallPackage))
+}
+
+# Basic packages
+InstallPackages(c("bookdown", "formatR", "kableExtra", "ragg"))
+
+# kableExtra must be loaded 
+if (knitr::opts_knit$get("rmarkdown.pandoc.to") == "docx") {
+  # Word output (https://stackoverflow.com/questions/35144130/in-knitr-how-can-i-test-for-if-the-output-will-be-pdf-or-word)
+  # Do not use autoformat (https://github.com/haozhu233/kableExtra/issues/308)
+  options(kableExtra.auto_format = FALSE)
+}
+# library("kableExtra")
+
+# Chunk font size hook: allows size='small' or any valid Latex font size in chunk options
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\n \\", options$size,"\n\n", x, "\n\n \\normalsize"), x)
+})
+```
+
+```{r Options, include=FALSE}
+### Customized options for this document
+# Add necessary packages here
+Packages <- c("tidyverse", "entropart", "vegan")
+# Install them
+InstallPackages(Packages)
+
+# knitr options
+knitr::opts_chunk$set(
+  cache =   TRUE,     # Cache chunk results
+  include = TRUE,     # Show/Hide chunks
+  echo =    FALSE,    # Show/Hide code
+  warning = FALSE,    # Show/Hide warnings
+  message = FALSE,    # Show/Hide messages
+  # Figure alignment and size
+  fig.align = 'center', out.width = '80%',
+  # Graphic devices (ragg_png is better than standard png)
+  dev = c("ragg_png", "pdf"),
+  # Code chunk format
+  tidy = FALSE, tidy.opts = list(blank=FALSE, width.cutoff=60),
+  size = "scriptsize", knitr.graphics.auto_pdf = TRUE
+  )
+options(width = 50)
+
+# ggplot style
+library("tidyverse")
+theme_set(theme_bw())
+theme_update(panel.background=element_rect(fill="transparent", colour=NA),
+             plot.background=element_rect(fill="transparent", colour=NA))
+knitr::opts_chunk$set(dev.args=list(bg="transparent"))
+
+# Tibbles: 5 lines, fit to slide width
+options(tibble.print_min = 5, tibble.width = 50)
+
+# Random seed
+set.seed(973)
+
+# Load entropart
+library("entropart")
+```
+
+
+# Motivation
+
+## La question
+
+Comment mesurer la diversité et la structuration spatiale ?
+
+Applications : 
+
+- mesure de la biodiversité ;
+
+- mesure de la concentration spatiale et de la spécialisation en économie géographique.
+
+
+## Les outils
+
+L'entropie mesure :
+
+- le désordre (physique statistique, 19^ème^ siècle) ;
+
+- l'incertitude [théorie de l'information, @Shannon1948] ;
+
+- l'inégalité [@Theil1967].
+
+
+## La présentation
+
+Les méthodes utilisées :
+
+- L'entropie classique ;
+
+- Sa généralisation ;
+
+- Les nombres effectifs.
+
+Transfert des développement de la littérature sur la biodiversité à l'économie géographique.
+
+
+## Les données
+
+Eurostat : Effectifs salariés de 19 secteurs industriels dans 25 pays européens.
+
+```{r data, echo=FALSE}
+EuroStat <- read.csv2(file ="data/sbs_r_nuts06_r2.csv")
+# Suppression des pays avec trop de données manquantes
+EuroStat <- EuroStat[
+  !(substr(EuroStat$geo, start = 1, stop = 2) %in% c("CY", "IE", "LU", "MT", "SI")), 
+]
+# Mise à jour du facteur
+EuroStat$geo <- factor(EuroStat$geo)
+# n2015 est importé comme chaîne de caractères : conversion
+EuroStat$n2015 <- as.numeric(EuroStat$n2015)
+
+# Niveau de détail
+NUTS0 <- nchar(as.character(EuroStat$geo)) == 2
+NUTS1 <- nchar(as.character(EuroStat$geo)) == 3
+NUTS2 <- nchar(as.character(EuroStat$geo)) == 4
+NACE1 <- nchar(as.character(EuroStat$nace_r2)) == 1
+NACE2 <- nchar(as.character(EuroStat$nace_r2)) == 3
+NACE3 <- nchar(as.character(EuroStat$nace_r2)) == 4
+
+# Sélection des données
+ES02C <- EuroStat[
+  # NUTS et NACE
+  NUTS0 & NACE2 & 
+    # Industrie
+    substr(EuroStat$nace_r2, start=1, stop=1) == "C",
+]
+# Tableau de contingence
+xtab <- as.data.frame.matrix(
+  xtabs(n2015 ~ nace_r2 + geo, 
+  data = ES02C, 
+  addNA = TRUE, 
+  drop.unused.levels = TRUE)
+)
+# Elimination des secteurs avec données manquantes
+ES02Cx <- xtab[apply(xtab, 1, function(x) !any(is.na(x))), ]
+```
+
+BCI : Nombre d'arbres de 50 parcelles d'un hectare de la forêt de Barro Colorado Island (Panama), appartenant à 225 espèces.
+25000 arbres mesurés : inventaire exceptionnel.
+
+```{r BCI}
+library("vegan")
+data(BCI)
+```
+
+Paracou : Inventaires de deux hectares de forêts tropicale en Guyane française (Parcelles 6 et 18).
+600 arbres environ par hectare : inventaire très insuffisant.
+
+
+# L'entropie
+
+## Définir le désordre
+
+A l'origine, Carnot (1824)
+
+- Second principe de la thermodynamique.
+
+Précisément : 
+
+  - Transfert de chaleur, $\mathrm{d}Q$, à somme nulle (1^er^ principe) ;
+  
+  - Tiédissement : $\mathrm{d}Q/T$, à somme positive (2^nd^ principe). Augmentation du désordre.
+  
+Remarque : l'entropie est définie par sa variation (étymologie: _transformation_).
+
+
+## Boltzmann
+
+\begincols
+  \begincol{.48\textwidth}
+
+Un gaz est un ensemble de particules, chacune ayant plusieurs états possibles.
+
+L'entropie est proportionnelle au logarithme du nombre d'états possibles de l'ensemble des particules [1877, traduit par @Sharp2015].
+
+Lien avec le second principe.
+
+  \endcol
+  \begincol{.48\textwidth}
+
+![Tombe de Boltzmann](Images/520px-Zentralfriedhof_Vienna_-_Boltzmann.jpg)
+
+  \endcol
+\endcols
+
+
+## Mesurer le désordre
+
+Définition d'une chaîne de caractères :
+
+- longueur $n$ ;
+
+- alphabet probabilisé.
+
+Exemple : 
+
+- 3 lettres, \{a, b, c\},  fréquences (1/2, 1/3, 1/6) ;
+
+- Combien de chaînes de 60 caractères ?
+
+- Le logarithme du nombre de chaînes est $n$ fois l'entropie : $`r format(60*Shannon(c(1/2, 1/3, 1/6)), digits=2)`$.
+
+L'entropie de Shannon mesure la complexité de la distribution de \{a, b, c\}, indépendamment de la longueur de la chaîne : `r format(Shannon(c(1/2, 1/3, 1/6)), digits=3)`
+
+
+## Mesurer l'incertitude
+
+Expérience à plusieurs résultats possibles.
+
+- La probabilité d'obtenir $r_s$ est $p_s$.
+
+Fonction d'information : $I(p_s)$, entre $I(0)=+\infty$ et $I(1)=0$.
+
+- Définition : la rareté est $1/p_s$.
+
+- Le logarithme de la rareté est la fonction d'information de Shannon.
+
+L'information moyenne apportée par un individu est l'entropie de Shannon:
+$$\sum_s{p_s \ln {\frac{1}{p_s}}}$$
+
+
+## Entropie généralisée
+
+Autres entropies : Rényi, Shorrocks... @Tsallis1988
+
+Paramétriques.
+
+Logarithme déformé : 
+
+```{r lnq, echo=FALSE}
+library("entropart")
+curve(log(1/x), 0, 1, lty = 1, lwd = 2, ylab = expression(ln[q](1/x)))
+curve(lnq(1/x, 0), 0, 1, lwd = 2, lty = 2, add = TRUE)
+curve(lnq(1/x, 2), 0, 1, lwd = 2, lty = 3, add = TRUE)
+legend(
+  "topright", 
+  legend = c(
+    expression(ln[0](1/x)), 
+    "ln(1/x)",
+    expression(ln[2](1/x))
+  ),
+  lty = c(2, 1, 3, 4), 
+  inset=  0.02
+)
+```
+
+
+## Formalisation
+
+L'entropie de Tsallis est la moyenne du logarithme (déformé, d'ordre $q$) de la rareté.
+
+L'ordre $q$ donne une importance plus ou moins grande aux petites probabilités.
+
+- Entropie d'ordre 0 : le nombre de catégories (-1) ;
+
+- Entropie d'ordre 1 : Shannon ;
+
+- Entropie d'ordre 2 : Simpson (1-Herfindahl).
+
+
+## Nombres de Hill
+
+Nombre de catégories équiprobables de même entropie que celle du système observé [@Hill1973].
+
+Mesure interprétable et comparable quelque soit l'ordre de diversité.
+
+Exponentielle (déformée) de l'entropie [@Marcon2014a].
+
+
+## Profil de diversité
+
+Comparaison de la diversité des deux parcelles de la forêt de Paracou.
+
+```{r Paracou, echo=FALSE, out.width = "60%"}
+q.seq <- seq(0, 2, .1)
+P6D<- CommunityProfile(Diversity, Paracou618.MC$Nsi[,1], q.seq)
+P18D<- CommunityProfile(Diversity, Paracou618.MC$Nsi[,2], q.seq)
+plot(P6D, xlab="q", ylab="Diversité", main="", ylim=c(min(P6D$y), max(P18D$y)))
+lines(P18D, lty=2)
+legend("topright", 
+      legend = c("Paracou 6", "Paracou 18"),
+      lty = c(2, 1, 3, 4), inset=  0.02)
+```
+
+
+# TP
+
+## Pratiquer
+
+Calcul de la diversité avec R : fichier `TP1.Rmd`.
+
+## Questions similaires entre disciplines
+
+Biodiversité :
+
+- Nombres d'arbres par espèces dans un habitat forestier : biodiversité.
+
+Economie :
+
+- Nombre d'employés par secteur industriel dans un pays : diversité = contraire de la spécialisation.
+
+Traduction possible.
+
+
+## Spécialisation absolue
+
+Transformation simple : 
+
+(Nb Secteurs - Diversité) / (Nb Secteurs - 1)
+
+```{r s, echo=FALSE}
+CPnormalize <- function(CProfile, Max) {
+  NormalizedCP <- CProfile
+  NormalizedCP$y <- (Max-CProfile$y)/(Max-1)
+  if (!is.null(CProfile$high)) NormalizedCP$low <- (Max-CProfile$high)/(Max-1)
+  if (!is.null(CProfile$low)) NormalizedCP$high <- (Max-CProfile$low)/(Max-1)
+  return(NormalizedCP)
+}
+dMax <- nrow(ES02Cx)
+dpIT <- CommunityProfile(Diversity, as.AbdVector(ES02Cx[, "IT"]), Correction="None")
+dpDE <- CommunityProfile(Diversity, as.AbdVector(ES02Cx[, "DE"]), Correction="None")
+dpFR <- CommunityProfile(Diversity, as.AbdVector(ES02Cx[, "FR"]), Correction="None")
+dpIS <- CommunityProfile(Diversity, as.AbdVector(ES02Cx[, "IS"]), Correction="None")
+dpEurope <- CommunityProfile(Diversity, rowSums(ES02Cx), Correction="None")
+spIT <- CPnormalize(dpIT, dMax)
+spDE <- CPnormalize(dpDE, dMax)
+spFR <- CPnormalize(dpFR, dMax)
+spIS <- CPnormalize(dpIS, dMax)
+spEurope <- CPnormalize(dpEurope, dMax)
+plot(spEurope, ylim = c(0, 1), xlab="Ordre", ylab="Spécialisation absolue")
+lines(spIT, col="green", lty=2, lwd=2)
+lines(spDE, col="blue", lty=3, lwd=2)
+lines(spFR, col="orange", lty=4, lwd=2)
+lines(spIS, col="black", lty=5, lwd=2)
+legend("topleft", 
+      legend = c("Europe", "Italie", "Allemagne", "France", "Islande"),
+      lty = 1:5, col= c("black", "green", "blue", "orange", "black"),
+      inset=  0.02)
+```
+
+# Décomposition de l'entropie
+
+## Entropie relative
+
+Ecart d'une distribution observée à une distribution attendue.
+
+- Divergence de Kullback-Leibler ;
+
+- Entropie relative de Theil.
+
+Généralisation à l'ordre $q$ [@Marcon2014a].
+
+La distribution attendue est la moyenne des distributions, donc l'entropie relative mesure à quel point chaque distribution est différente de la moyenne.
+
+
+## Exemple
+
+Entropie de Paracou, parcelles 6 et 18.
+
+```{r}
+DivParacou <- DivPart(q = 1, Paracou618.MC)
+```
+
+
+- Entropie de chaque parcelle : 
+    - p6 : `r format(DivParacou$CommunityAlphaEntropies["P006"], digits = 3)`
+    - p18 : `r format(DivParacou$CommunityAlphaEntropies["P018"], digits = 3)`
+
+- Entropie moyenne des parcelles (pondérées par le nombre d'arbres) : `r format(DivParacou$TotalAlphaEntropy, digits = 3)`
+
+- Entropie de l'ensemble des deux parcelles : `r format(DivParacou$GammaEntropy, digits = 3)`
+
+- Entropie relative moyenne : `r format(DivParacou$TotalBetaEntropy, digits = 2)`
+
+Décomposition de l'entropie non limitée à l'ordre 1.
+
+
+## Décomposition de la biodiversité
+
+@Whittaker1960 définit les diversités :
+
+ - $\alpha$ : moyenne des diversités locales
+ - $\gamma$ : diversité globale
+ - $\beta$ : l'écart entre les deux.
+ 
+ 
+L'entropie $\gamma$ est la somme des entropies $\alpha$ et $\beta$.
+
+La diversité est l'exponentielle de l'entropie donc la diversité $\gamma$ est le produit des diversités $\alpha$ et $\beta$.
+
+Résultat immédiat pour $q=1$, étendu à $q$ quelconque [@Jost2006;@Marcon2014a].
+
+
+## Nombres de Hill
+
+```{r}
+BCI_dp <- DivPart(q=1, MetaCommunity(t(BCI)))
+```
+
+A BCI, la diversité $\alpha$ d'ordre 1 est $`r format(BCI_dp$TotalAlphaDiversity, digits=2)`$ espèces par parcelle d'un hectare.
+
+La diversité $\gamma$ est $`r format(BCI_dp$GammaDiversity, digits=2)`$ espèces effectives.
+
+La diversité $\beta$ est le rapport des deux, c'est-à-dire $`r format(BCI_dp$TotalBetaDiversity, digits=2)`$ parcelles effectives.
+
+Parcelles effectives : parcelles de même poids, ne comprenant aucune espèce commune.
+
+
+## Nombres de Hill
+
+La même décomposition montre que les deux parcelles de Paracou sont aussi différentes que les 50 de BCI :
+
+```{r}
+autoplot(DivPart(q = 1, Paracou618.MC, Biased = FALSE))
+```
+
+
+
+## Profils de diversité
+
+Diversité des secteurs industriels en Europe :
+
+```{r de}
+# Création d'une metacommunauté
+ES02CtMC <- MetaCommunity(ES02Cx, Weights = colSums(ES02Cx))
+# Calcul des diversités alpha, beta, gamma
+dpES02CtMC <- DivProfile(, ES02CtMC)
+# Figure
+plot(x=dpES02CtMC$Order, y=dpES02CtMC$TotalAlphaDiversity, type="l", lwd=2, xlab="Ordre", ylab="Diversité", log="y", ylim=c(1, max(dpES02CtMC$GammaDiversity)))
+lines(x=dpES02CtMC$Order, y=dpES02CtMC$TotalBetaDiversity, col="red", lty=2, lwd=2)
+lines(x=dpES02CtMC$Order, y=dpES02CtMC$GammaDiversity, col="blue", lty=3, lwd=2)
+legend("left", 
+      legend = c("Secteurs effectifs / Pays", "Pays effectifs", "Secteurs effectifs"),
+      lty = 1:5, col= c("black", "red", "blue"),
+      inset=  0.02)
+```
+
+# TP
+
+## Pratiquer
+
+Décomposition de la diversité : fichier `TP2.Rmd`.
+
+
+# Conclusion
+
+## Concepts identiques, expression contraire
+
+Diversité $\leftrightarrow$ Spécialisation.
+
+Raison : mise en avant de l'aspect positif.
+
+
+## Absolu et relatif
+
+Diversités $\alpha$ et $\gamma$ absolues, $\beta$ relative.
+
+Approches complémentaires dans la littérature économique.
+
+Unification par l'entropie :
+
+- liens étroits : significativité de l'une $\iff$ significativité de l'autre ;
+
+- information très différente.
+
+
+## Interfertilisation
+
+De la physique à l'écologie : entropie de Tsallis.
+
+De la théorie de l'information à l'écologie : divergence de @Kullback1951.
+
+De la théorie de l'information à l'économie : entropie relative de Theil.
+
+En écologie : nombres effectifs.
+
+
+
+<!-- A slide for references --> 
+`r if (!knitr:::is_latex_output()) '## References {.tiny}'`
+<!-- Styles for HTML slides -->
+<!-- https://stackoverflow.com/questions/38260799/references-page-truncated-in-rmarkdown-ioslides-presentation/38294541#38294541 -->
+<style>
+  .forceBreak { -webkit-column-break-after: always; break-after: column; }
+  slides > slide { overflow: scroll; }
+  slides > slide:not(.nobackground):after { content: ''; }
+</style>

@@ -1,0 +1,73 @@
+---
+title: "TP Biodiversité-Concentration n°3"
+output: html_document
+date: "2023-06-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Données de Paracou
+
+## Lecture
+
+Les données sont disponibles dans le package _dbmss_.
+
+```{r}
+library("dbmss")
+data(paracou16)
+# Plot (second column of marks is Point Types) 
+autoplot(paracou16, which.marks=2, leg.side="right")
+```
+
+## Concentation spatiale topographique
+
+Les arbres sont-ils spatialement concentrés dans la parcelle ?
+
+L'homogénéité est assumée.
+
+```{r}
+# Calculate K
+r <- 0:30
+(Paracou_K <- Khat(paracou16, r))
+
+# Plot (after normalization by pi.r^2)
+autoplot(Paracou_K, ./(pi*r^2) ~ r)
+```
+
+Le calcul nécessite de corriger les effets de bord.
+
+A courte distance, chaque arbre a moins de voisins qu'attendu.
+
+
+## Intervalle de confiance de l'hypothèse nulle CSR
+
+L'hypothèse nulle est que les arbres sont placés indépendamment les uns des autres.
+
+Elle est testée par la méthode de Monte-Carlo.
+1000 simulations au moins sont nécessaires.
+
+```{r}
+NumberOfSimulations <- 10#00 pour réduire le temps de calcul
+(Paracou_Kenv <- KEnvelope(paracou16, r, NumberOfSimulations))
+# Plot (after normalization by pi.r^2)
+autoplot(Paracou_Kenv, ./(pi*r^2) ~ r)
+```
+
+La répulsion entre les arbres est significative.
+
+
+# Fonction g de Ripley
+
+La fonction g est la dérivée de la fonction K. 
+Elle compare le nombre de voisins à la distance r et non jusqu'à la distance r.
+
+```{r}
+# Plot the envelope
+autoplot(gEnvelope(paracou16, r, NumberOfSimulations))
+```
+
+Plus d'information sur les distances auxquelles a lieu la répulsion.
+Mais nécessité de lisser les données : choix difficile.
+Possibilité de détecter du bruit sans intérêt.

@@ -1,0 +1,50 @@
+---
+title: "TP Biodiversité-Concentration n°2"
+output: html_document
+date: "2023-06-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Données de Paracou
+
+## Lecture
+
+Les données sont disponibles dans le package _entropart_.
+
+```{r}
+library("entropart")
+# L'objet Paracou618.MC contient les abondances
+autoplot(as.AbdVector(Paracou618.MC$Ns))
+```
+
+Le diagramme rang-abondance présente la somme des deux parcelles.
+
+
+## Diversité $\beta$
+
+Dans entropart, la décomposition de la diversité s'applique aux objets de type `Metacommunity`, construits par la fonction `Metacommunity()` qui prend pour arguments les abondances dans chaque communauté et leur poids (voir l'aide).
+`Paracou618.MC` est un objet de ce type.
+
+```{r}
+summary(Paracou618.MC)
+```
+
+Le taux de couverture ("Sample coverage") est l'estimation de la probabilité qu'un individu de l'ensemble des communautés appartienne à une espèce échantillonnée.
+C'est une statistique capitale dans l'estimation de la diversité asymptotique.
+
+La décoposition de la diversité se fait par la fonction `DivPart()`.
+
+```{r}
+Paracou_dp <- DivPart(q = 1, Paracou618.MC, Biased = FALSE)
+summary(Paracou_dp)
+```
+
+Représentation graphique :
+
+```{r}
+autoplot(Paracou_dp)
+```
+

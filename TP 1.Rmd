@@ -1,0 +1,177 @@
+---
+title: "TP Biodiversité-Concentration n°1"
+output: html_document
+date: "2023-06-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Données Eurostat
+
+## Lecture
+
+Les données d'[Eurostat](https://ec.europa.eu/eurostat/web/regions/data/database/) fournissent le nombre nombre d’employés par secteur industriel dans vingt-cinq pays européens en 2015 (SBS data by NUTS 2 regions and NACE Rev.2).
+
+Les pays avec trop de données manquantes sont supprimés, de même que les secteurs incomplètement renseignés.
+
+```{r data}
+EuroStat <- read.csv2(file = "data/sbs_r_nuts06_r2.csv")
+# Suppression des pays avec trop de données manquantes
+EuroStat <- EuroStat[
+  !(substr(EuroStat$geo, start = 1, stop = 2) %in% c("CY", "IE", "LU", "MT", "SI")), 
+]
+# Mise à jour du facteur
+EuroStat$geo <- factor(EuroStat$geo)
+# n2015 est importé comme chaîne de caractères : conversion
+EuroStat$n2015 <- as.numeric(EuroStat$n2015)
+
+# Niveau de détail
+NUTS0 <- nchar(as.character(EuroStat$geo)) == 2
+NUTS1 <- nchar(as.character(EuroStat$geo)) == 3
+NUTS2 <- nchar(as.character(EuroStat$geo)) == 4
+NACE1 <- nchar(as.character(EuroStat$nace_r2)) == 1
+NACE2 <- nchar(as.character(EuroStat$nace_r2)) == 3
+NACE3 <- nchar(as.character(EuroStat$nace_r2)) == 4
+
+# Sélection des données
+ES02C <- EuroStat[
+  # NUTS et NACE
+  NUTS0 & NACE2 & 
+    # Industrie
+    substr(EuroStat$nace_r2, start=1, stop=1) == "C",
+]
+# Tableau de contingence
+xtab <- as.data.frame.matrix(
+  xtabs(n2015 ~ nace_r2 + geo, 
+  data = ES02C, 
+  addNA = TRUE, 
+  drop.unused.levels = TRUE)
+)
+# Elimination des secteurs avec données manquantes
+ES02Cx <- xtab[apply(xtab, 1, function(x) !any(is.na(x))), ]
+```
+
+Le résultat est un tableau avec les pays en ligne et les secteurs en colonnes
+
+```{r}
+ES02Cx[1:4, 1:6]
+```
+
+
+## Diversité de l'industrie française
+
+Les données sont peu détaillées, avec 19 secteurs industriels.
+
+La distribution des abondances peut être représentée par un diagramme Rang-abondance ("Whittaker plot" en écologie).
+
+```{r}
+library("entropart")
+# Déclaration explicite du type de données
+France <- as.AbdVector(ES02Cx["FR"])
+autoplot(France)
+```
+
+
+
+### Richesse
+
+La richesse est de 19 secteurs.
+
+### Entropie de Shannon
+
+```{r}
+Shannon(France)
+```
+Nombre de Hill correspondant :
+
+```{r}
+Diversity(France, q = 1)
+```
+
+
+### Entropie de Simpson
+
+Probabilité que deux employés choisis au hasard travaillent dans deux secteurs différents (complément à 1 de l'indice d'Herfindahl).
+
+```{r}
+Simpson(France)
+```
+Nombre de Hill correspondant :
+
+```{r}
+Diversity(France, q = 2)
+```
+
+
+### Profil de diversité
+
+Nombre effectif de secteurs industriels en fonction de l'ordre de la diversité :
+
+```{r}
+autoplot(CommunityProfile(Diversity, France))
+```
+
+Comparaison avec l'Italie
+
+```{r}
+France_dp <- CommunityProfile(Diversity, France)
+Italie_dp <- CommunityProfile(Diversity, as.AbdVector(ES02Cx["IT"]))
+library("ggplot2")
+autoplot(France_dp, col = "blue") +
+  geom_line(
+    data = as.data.frame.list(Italie_dp), 
+    mapping = aes(x = x, y = y),
+    col = "green"
+  )
+```
+
+
+# Forêt de Barro colorado Island
+
+Les données sont dans le package _vegan_
+
+```{r}
+library("vegan")
+data("BCI")
+# Somme des 50 hectares
+BCI_50 <- as.AbdVector(colSums(BCI))
+autoplot(BCI_50)
+```
+
+## Estimation de la diversité
+
+En écologie, les données sont généralement des échantillons : ici, 50 ha d'une forêt de plusieurs centaines de km^2^.
+
+La diversité observée augmente avec l'effort d'échantillonnage. 
+La figure suivante montre l'espérance du nombre d'espèces échantillonnées en fonction du nombre d'arbres.
+
+```{r}
+# Species Accumulation Curve
+autoplot(DivAC(BCI_50))
+```
+
+Il est possible d'estimer la diversité asymptotique par des techniques statistiques.
+
+```{r}
+Richness(BCI_50)
+```
+
+La différence entre la diversité asymptotique et la diversité observée est d'autant plus grande que l'ordre de la diversité est petit.
+
+La diversité de Simpson est peu sensible au sous-échantillonnage.
+
+```{r}
+# Diversité observée
+Diversity(BCI_50, Correction = "None")
+# Diversité estimée
+Diversity(BCI_50)
+```
+
+## Profil de diversité
+
+```{r}
+autoplot(CommunityProfile(Diversity, BCI_50))
+```
+
