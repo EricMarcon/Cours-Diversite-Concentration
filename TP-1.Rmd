@@ -31,7 +31,7 @@ InstallPackages(c("entropart", "dbmss"))
 
 ## Lecture
 
-Les données d'[Eurostat](https://ec.europa.eu/eurostat/web/regions/data/database/) fournissent le nombre nombre d’employés par secteur industriel dans vingt-cinq pays européens en 2015 (SBS data by NUTS 2 regions and NACE Rev.2).
+Les données d'[Eurostat](https://ec.europa.eu/eurostat/web/regions/data/database/) fournissent le nombre nombre d’employés par secteur industriel dans vingt-cinq pays européens en 2015 (_SBS data by NUTS 2 regions and NACE Rev.2_).
 
 Les pays avec trop de données manquantes sont supprimés, de même que les secteurs incomplètement renseignés.
 
@@ -59,7 +59,7 @@ ES02C <- EuroStat[
   # NUTS et NACE
   NUTS0 & NACE2 & 
     # Industrie
-    substr(EuroStat$nace_r2, start=1, stop=1) == "C",
+    substr(EuroStat$nace_r2, start = 1, stop = 1) == "C",
 ]
 # Tableau de contingence
 xtab <- as.data.frame.matrix(
@@ -72,7 +72,7 @@ xtab <- as.data.frame.matrix(
 ES02Cx <- xtab[apply(xtab, 1, function(x) !any(is.na(x))), ]
 ```
 
-Le résultat est un tableau avec les pays en ligne et les secteurs en colonnes
+Le résultat est un tableau avec les secteurs en ligne et les pays en colonnes.
 
 ```{r}
 ES02Cx[1:4, 1:6]
