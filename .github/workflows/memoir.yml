@@ -30,7 +30,10 @@ jobs:
           memoiR::build_githubpages()
           file.copy(from = c("3-EspaceContinu.pptx", "4-Perspectives.pptx"),  to = "docs")
         shell: Rscript {0}
-      - name: Upload artifact
+      - name: GH Pages Theme
+        run: |
+          echo 'remote_theme: pages-themes/slate@v0.2.0' > docs/_config.yml
+     - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ghpages
