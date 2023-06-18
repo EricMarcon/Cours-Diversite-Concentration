@@ -191,6 +191,7 @@ autoplot(upC) +
   geom_line(data=data.frame(x=upC20$x, y=upC20$y), mapping = aes(x=x, y=y), lty=3, col="blue") +
   labs(x="Ordre", y="Valence absolue")
 ```
+
 ## Exemple
 
 Concentration absolue des secteurs C10 (Manufacture de produits alimentaires, en vert), C20 (Manufacture de produits chimiques, en bleu), et de l'industrie entière (en noir).
