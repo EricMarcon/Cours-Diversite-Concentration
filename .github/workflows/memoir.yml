@@ -34,7 +34,7 @@ jobs:
       - name: GH Pages Theme
         run: |
           echo 'remote_theme: pages-themes/slate@v0.2.0' > docs/_config.yml
-     - name: Upload artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ghpages
