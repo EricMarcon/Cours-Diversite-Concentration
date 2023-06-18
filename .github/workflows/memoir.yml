@@ -26,6 +26,7 @@ jobs:
         shell: Rscript {0}
       - name: Render Rmarkdown files
         run: |
+          Sys.setlocale("LC_TIME", "fr_FR")
           lapply(list.files(pattern="*.Rmd"), function(file) rmarkdown::render(file, "all"))
           memoiR::build_githubpages()
           file.copy(from = c("3-EspaceContinu.pptx", "4-Perspectives.pptx"),  to = "docs")
