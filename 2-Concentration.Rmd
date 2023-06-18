@@ -168,14 +168,14 @@ Economie :
 
 ## Conséquences
 
-Tout ce qui a été dit et fait sur la diversité est valable pour l'ubiquité en transposant le tableau de données :
+Tout ce qui a été dit et fait sur la diversité est valable pour la valence en transposant le tableau de données :
 
-- L'ubiquité s'exprime en nombre effectifs de pays occupés par un secteur ;
+- La valence s'exprime en nombre effectifs de pays occupés par un secteur ;
 
-- L'ubiquité peut être décomposée ;
+- La valence peut être décomposée ;
 
 - Elle peut être transformée en concentration spatiale, par exemple en calculant 
-(Nb Pays - Ubiquité) / (Nb Pays - 1)
+(Nb Pays - valence) / (Nb Pays - 1)
 
 
 ## Exemple
