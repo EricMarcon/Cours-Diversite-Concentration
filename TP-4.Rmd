@@ -29,6 +29,7 @@ Les wacapous (_Vouacapoua americana_) sont-ils concentrés relativement à la di
 
 ```{r}
 NumberOfSimulations <- 100#0 pour réduire le temps de calcul
+r <- 0:30
 (Va_Menv <- MEnvelope(
   paracou16, 
   r = r, 
