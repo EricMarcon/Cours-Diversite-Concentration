@@ -374,7 +374,7 @@ InstallPackages(c(&quot;entropart&quot;, &quot;dbmss&quot;))</code></pre>
 <pre><code>## also installing the dependencies &#39;proxy&#39;, &#39;xts&#39;, &#39;intervals&#39;, &#39;e1071&#39;, &#39;wk&#39;, &#39;tensor&#39;, &#39;zoo&#39;, &#39;sftime&#39;, &#39;spacetime&#39;, &#39;FNN&#39;, &#39;classInt&#39;, &#39;s2&#39;, &#39;units&#39;, &#39;lwgeom&#39;, &#39;spatstat.data&#39;, &#39;spatstat.sparse&#39;, &#39;goftest&#39;, &#39;gstat&#39;, &#39;reshape&#39;, &#39;sf&#39;, &#39;stars&#39;, &#39;deldir&#39;, &#39;polyclip&#39;, &#39;spatstat.explore&#39;, &#39;automap&#39;, &#39;cubature&#39;, &#39;RcppParallel&#39;, &#39;spatstat.utils&#39;, &#39;sp&#39;, &#39;spatstat.geom&#39;, &#39;spatstat.random&#39;</code></pre>
 <pre><code>## 
 ## The downloaded binary packages are in
-##  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpe9cqaa/downloaded_packages</code></pre>
+##  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmp7Xj59E/downloaded_packages</code></pre>
 </div>
 <div id="données-eurostat" class="section level1">
 <h1>Données Eurostat</h1>
@@ -382,8 +382,8 @@ InstallPackages(c(&quot;entropart&quot;, &quot;dbmss&quot;))</code></pre>
 <h2>Lecture</h2>
 <p>Les données d’<a href="https://ec.europa.eu/eurostat/web/regions/data/database/">Eurostat</a>
 fournissent le nombre nombre d’employés par secteur industriel dans
-vingt-cinq pays européens en 2015 (SBS data by NUTS 2 regions and NACE
-Rev.2).</p>
+vingt-cinq pays européens en 2015 (<em>SBS data by NUTS 2 regions and
+NACE Rev.2</em>).</p>
 <p>Les pays avec trop de données manquantes sont supprimés, de même que
 les secteurs incomplètement renseignés.</p>
 <pre class="r"><code>EuroStat &lt;- read.csv2(file = &quot;data/sbs_r_nuts06_r2.csv&quot;)
@@ -409,7 +409,7 @@ ES02C &lt;- EuroStat[
   # NUTS et NACE
   NUTS0 &amp; NACE2 &amp; 
     # Industrie
-    substr(EuroStat$nace_r2, start=1, stop=1) == &quot;C&quot;,
+    substr(EuroStat$nace_r2, start = 1, stop = 1) == &quot;C&quot;,
 ]
 # Tableau de contingence
 xtab &lt;- as.data.frame.matrix(
@@ -420,8 +420,8 @@ xtab &lt;- as.data.frame.matrix(
 )
 # Elimination des secteurs avec données manquantes
 ES02Cx &lt;- xtab[apply(xtab, 1, function(x) !any(is.na(x))), ]</code></pre>
-<p>Le résultat est un tableau avec les pays en ligne et les secteurs en
-colonnes</p>
+<p>Le résultat est un tableau avec les secteurs en ligne et les pays en
+colonnes.</p>
 <pre class="r"><code>ES02Cx[1:4, 1:6]</code></pre>
 <pre><code>##        AT    BE    BG     CZ     DE    DK
 ## C10 71924 85083 82510 101575 591468 54896
