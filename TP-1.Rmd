@@ -8,6 +8,25 @@ date: "2023-06-19"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Packages
+
+Installation des packages nécessaires.
+
+```{r packages}
+InstallPackages <- function(Packages) {
+  InstallPackage <- function(Package) {
+    if (!Package %in% installed.packages()[, 1]) {
+      install.packages(Package, repos="https://cran.rstudio.com/")
+    }
+  }
+  invisible(sapply(Packages, InstallPackage))
+}
+
+# Basic packages
+InstallPackages(c("entropart", "dbmss"))
+```
+
+
 # Données Eurostat
 
 ## Lecture
