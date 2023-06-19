@@ -265,7 +265,7 @@ Autres entropies : Rényi, Shorrocks... @Tsallis1988
 
 Paramétriques.
 
-Logarithme déformé : 
+Logarithme déformé : $\ln_q{x} = \frac{x^{1-q}-1}{1-q}$.
 
 ```{r lnq, echo=FALSE}
 library("entropart")
@@ -304,7 +304,7 @@ Nombre de catégories équiprobables de même entropie que celle du système obs
 
 Mesure interprétable et comparable quelque soit l'ordre de diversité.
 
-Exponentielle (déformée) de l'entropie [@Marcon2014a].
+Exponentielle (déformée: $e^x_q = \left[ 1+\left( 1-q \right)x \right]^{\frac{1}{1-q}}$) de l'entropie [@Marcon2014a].
 
 
 ## Profil de diversité
