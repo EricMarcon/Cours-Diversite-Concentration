@@ -147,7 +147,7 @@ autoplot(France_dp, col = "blue") +
 ```
 
 
-# Forêt de Barro colorado Island
+# Forêt de Barro Colorado Island
 
 Les données sont dans le package _vegan_
 
