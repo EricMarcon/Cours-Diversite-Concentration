@@ -98,6 +98,11 @@ autoplot(France)
 
 La richesse est de 19 secteurs.
 
+```{r}
+Richness(France)
+```
+
+
 ### Entropie de Shannon
 
 ```{r}
@@ -156,7 +161,7 @@ library("vegan")
 data("BCI")
 # Somme des 50 hectares
 BCI_50 <- as.AbdVector(colSums(BCI))
-autoplot(BCI_50)
+autoplot(BCI_50, Distribution = "lnorm")
 ```
 
 ## Estimation de la diversité
@@ -183,9 +188,9 @@ La diversité de Simpson est peu sensible au sous-échantillonnage.
 
 ```{r}
 # Diversité observée
-Diversity(BCI_50, Correction = "None")
+Diversity(BCI_50, Correction = "None", q = 2)
 # Diversité estimée
-Diversity(BCI_50)
+Diversity(BCI_50, q = 2)
 ```
 
 ## Profil de diversité
